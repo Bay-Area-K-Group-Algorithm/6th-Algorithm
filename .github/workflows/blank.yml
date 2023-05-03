@@ -20,7 +20,11 @@ jobs:
         id: changed-files
         run: |
           # get the list of changed files from the pull request
+<<<<<<< HEAD
           git diff --name-only origin/${{ github.event.pull_request.base.ref }} ${{ github.event.pull_request.head.ref }} > changed_files.txt
+=======
+          git diff --name-only origin/${{ github.event.pull_request.base.ref }}...${{ github.event.pull_request.head.ref }} > changed_files.txt
+>>>>>>> e888792 (Create a Github Action to auto-generate REAME.md)
           # set the output variable with the content of the file
           echo "::set-output name=files::$(cat changed_files.txt)"
       - name: Get folder path
