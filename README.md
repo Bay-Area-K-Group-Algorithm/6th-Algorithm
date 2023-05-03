@@ -38,6 +38,7 @@
 **풀이 수정**: 풀이코드/README 수정 시 커밋 amend 및 push -f
 ```shell
 > git checkout <자신의 브랜치>
+> git add .
 > git commit --amend
 > git push -f
 ```
