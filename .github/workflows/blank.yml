@@ -1,0 +1,58 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the workflow will run
+on:
+  pull_request:
+    branches: [ "main" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  generate-readme:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Get changed files
+        id: changed-files
+        run: |
+          # get the list of changed files from the pull request
+          git diff --name-only origin/${{ github.event.pull_request.base.ref }} origin/${{ github.event.pull_request.head.ref }} > changed_files.txt
+          # set the output variable with the content of the file
+          echo "::set-output name=files::$(cat changed_files.txt)"
+          rm -rf changed_files.txt
+      - name: Get folder path
+        id: folder-path
+        run: |
+          # get the folder path from the list of changed files
+          filepath=$(echo ${{ steps.changed-files.outputs.files }} | grep -o -m 1 '.*')
+          path=$(dirname $filepath)
+          # set the output variable with the folder path
+          echo "::set-output name=path::${path}"
+      - name: Get pull request message
+        id: pr-message
+        run: |
+          PR_BODY=$(echo "${{ github.event.pull_request.body }}")
+          PR_BODY="${PR_BODY//$'\n'/'%0A'}"
+          PR_BODY="${PR_BODY//$'\r'/'%0D'}"
+          PR_BODY=$(echo ${PR_BODY} | sed 's/`/\\`/g')
+          echo "::set-output name=message::${PR_BODY}"
+      - name: Generate README
+        run: |
+          # write script to generate README.md file in the specific folder with the pull request message
+          PR_BODY="${{ steps.pr-message.outputs.message }}"
+          touch ${{ steps.folder-path.outputs.path }}/README.md
+          echo "${PR_BODY//'%0D%0A'/$'\n'}" > ${{ steps.folder-path.outputs.path }}/README.md
+      - name: Commit changes
+        uses: EndBug/add-and-commit@v7
+        with:
+          message: 'Add README.md file'
+          add: .
+          author_name: 'GitHub Action'
+          author_email: 'action@github.com'
+
