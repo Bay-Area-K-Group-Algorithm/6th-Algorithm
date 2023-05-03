@@ -1,38 +1,24 @@
-// O(n 2^n) time and space
-// Time Limit Exceeded
+// Time: O(n^3 k^2) where n is nums.size() and k is number of distinct values in nums
+// Space: O(n^2 k^2)
 class Solution {
 public:
-    unordered_map<vector<bool>, int> memo;
+    unordered_map<int, int> memo;
     int maxCoins(vector<int>& nums) {
-        vector<bool> used(nums.size(), false);
-        return dp(nums, used, 0);
+        return dp(nums, 0, (int)nums.size()-1, 1, 1);
     }
 
-    int dp(const vector<int>& nums, vector<bool>& used, const int& numUsed) {
-        const int n = (int)nums.size();
-        if (n == numUsed) {
+    int dp(const vector<int>& nums, const int& lo, const int& hi, const int& left, const int& right) {
+        if (lo > hi) {
             return 0;
         }
         else {
-            if (memo.find(used) == memo.end()) {
-                vector<int> unusedIndices;
-                for (int i = 0; i < used.size(); i++) {
-                    if (!used[i]) {
-                        unusedIndices.push_back(i);
-                    }
+            int key = ((lo * 300 + hi) * 101 + left) * 101 + right;
+            if (memo.find(key) == memo.end()) {
+                for (int i = lo; i <= hi; ++i) {
+                    memo[key] = max(memo[key], left * nums[i] * right + dp(nums, lo, i-1, left, nums[i]) + dp(nums, i+1, hi, nums[i], right));
                 }
-                int res = 0;
-                for (int i = 0; i < unusedIndices.size(); ++i) {
-                    int left = i ? nums[unusedIndices[i-1]] : 1;
-                    int cur = nums[unusedIndices[i]];
-                    int right = i+1 < unusedIndices.size() ? nums[unusedIndices[i+1]] : 1;
-                    used[unusedIndices[i]] = true;
-                    res = max(res, left*cur*right + dp(nums, used, numUsed+1));
-                    used[unusedIndices[i]] = false;
-                }
-                memo[used] = res;
             }
-            return memo[used];
+            return memo[key];
         }
     }
 };
